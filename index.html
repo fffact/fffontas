@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fffontas</title>
+
+    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Mttdk8FO5HMuXSNefNKMqTWZRVPhkSaimgK1Q0mZSBMgYT6lJzHkg8jBty9w4rgZdx9hgd4HvKiEsR149tOh9qYyadKXFIEcbhluSKA8UtjV8m_4-bXiqySLcbJyJbisbJo1HOnVCBkidWsGxmqYqA" charset="UTF-8"></script><style>
+        #controls {
+            margin-top: 10px;
+        }
+    </style>
+
+    <!-- HANDSONTABLE -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" />
+    <!-- DEXIE -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+
+</head>
+<body>
+    <h3>Orario di lavoro</h3>
+    <div id="editor"></div>
+    <div id="controls">
+        <button id="test"        onclick="test()"       >Test</button>
+        <button id="consolodate" onclick="consolidate()">Consolidate</button>
+        <button id="loadfromdb"  onclick="loadFromDB()" >Load from DB</button>
+        <button id="yes"         onclick="test()"       >Yes</button>
+        <button id="no"          onclick="test()"       >No</button>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+</html>
