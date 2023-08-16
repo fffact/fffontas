@@ -21,13 +21,13 @@ function _afterChange (changes) {
         console.log({id, prop, value});
 
         db.workingHours.update(id, {[prop]: value})
-            .then((updated) => {
-                if (!updated) {
-                    // id doesn't exist
-                    db.workingHours.add({id, [prop]: value});
-                }
+        .then((updated) => {
+            if (!updated) {
+                // id doesn't exist
+                db.workingHours.add({id, [prop]: value});
             }
-        );
+        })
+        .catch(e => console.error(e));
     }
 }
 
@@ -37,57 +37,67 @@ function test () {
 
 function loadFromDB () {
     db.workingHours.orderBy('id').toArray()
-        .then((rows) => {
-            const r = rows.map((row) => [row.wday, row.from, row.to]);
-            editor.populateFromArray(0, 0, r);
-        })
-        .catch(e => console.error(e));
+    .then((rows) => {
+        const r = rows.map((row) => [row.wday, row.from, row.to]);
+        editor.populateFromArray(0, 0, r);
+    })
+    .catch(e => console.error(e));
 }
 
 function validateRow (row) {
-    // row should be {id: 1, wday: 'lun', from: '8:00', to: '9:00'}
-    let h0, m0, h1, m1
-    
-    // validate wday
-    const i = ['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'].indexOf(row.wday);
-    if (i >= 0) {
-        row.linearTimeWeekly = i * 1440;
-    } else {
+    try {
+        if (!(row.wday && row.from && row.to)) {
+            throw new Error(`Missing prop at row ${row.id}`);
+        };
+
+        const wdayIndex = ['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'].indexOf(row.wday);
+        if (wdayIndex < 0) throw new Error(`Malformed wday at row ${row.id}`);
+
+        let match = row.from.match(/(\d\d*):(\d\d)/);
+        if (!match) throw new Error(`Malformed from at row ${row.id}`);
+        const [, h0, m0] = match;
+        if (!(h0 >= 0 && h0 < 24 && m0 >= 0 && m0 < 60)) {
+            throw new Error(`Malformed from at row ${row.id}, out of range`);
+        }
+
+        match = row.to.match(/(\d\d*):(\d\d)/);
+        if (!match) throw new Error(`Malformed to at row ${row.id}`);
+        const [, h1, m1] = match;
+        if (!(h1 >= 0 && h1 < 24 && m1 >= 0 && m1 < 60)) {
+            throw new Error(`Malformed to at row ${row.id}, out of range`);
+        }
+
+        if ((h0 * 60 + m0) >= (h1 * 60 + m1)) throw new Error(`Malformed duration at row ${row.id}`);
+
+        // row is valid
+        row.linearTimeWeekly = wdayIndex * 1440 + h0 * 60 + m0;
+        return true;
+        
+    } catch (error) {
+        console.error(error);
         return false;
     }
-    
-    // validate from
-    try {
-        [h0, m0] = row.from.match(/(\d\d*):(\d\d)/).slice(1, 3).map(e => parseInt( e ));
-        if (h >= 0 && h <= 23 && m >= 0 && m <= 59) {
-            row.linearTimeWeekly += h * 60 + m;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        return false
-    }
-    
-
-    return row
 }
 
 function consolidate () {
     const wellFormed = [];
     
     db.workingHours.orderBy('id').toArray()
-        .then((rows) => {
-            for (const r of rows) {
-                const v = validateRow(r);
-                if (v) wellFormed.push(v);
-            }
-            console.log(wellFormed);
-        })
-        .catch(e => console.error(e));
+    .then((rows) => {
+        for (const r of rows) {
+            const v = validateRow(r);
+            if (v) wellFormed.push(r);
+        }
+        return wellFormed;
+    })
+    .then((rows) => {
+        console.log(rows);
+    })
+    .catch(e => console.error(e));
 }
   
 // MAIN
-async function main () {
+function main () {
     db = new Dexie('fffontas');
 
     db.version(1).stores({
