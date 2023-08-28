@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>alpine-dexie-2</title>
+
+    <!-- DEXIE -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <!-- ALPINE -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+    <div></div>
+</body>
+
+<script>
+    const db = new Dexie('myDatabase');
+    db.version(1).stores({
+        counters: '++id'
+    });
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('counterComponent', () => ({
+            value = 0,
+
+            init () {
+
+            },
+
+            async increment () {
+
+            }
+        }));
+    });
+</script>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>alpine-dexie-1</title>
+
+    <!-- DEXIE -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <!-- ALPINE -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body>
+    <div x-data="productsComponent">
+        <div>
+            <input type="text" x-model="name" placeholder="Name" />
+            <input type="text" x-model="color" placeholder="Color" />
+            <button @click="add">Add product</button>
+        </div>
+
+        <div>
+            <h2>Products</h2>
+            <template x-for="p in products">
+                <div x-text="`ID: ${p.id} Name: ${p.name} Color: ${p.color}`"></div>
+            </template>
+        </div>
+    </div>
+
+
+    <script>
+        const db = new Dexie('myDatabase');
+        db.version(1).stores({
+            products: '++id, name, color',
+        });
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('productsComponent', () => ({
+                products: [],
+                name: '',
+                color: '',
+
+                // observe (dataName, observable) {
+                //     const subscription = observable.subscribe({
+                //         next: val => { this[dataName] = val }
+                //     });
+                // },
+
+                init () {
+                    // this.observe('products', Dexie.liveQuery(() => db.products.toArray()));
+
+                    const myObservable = Dexie.liveQuery( () => db.products.toArray() );
+                    const subscription = myObservable.subscribe({
+                        next: val => { this.products = val }
+                    });
+                },
+
+                async add() {
+                    const id = await db.products.add({
+                        name: this.name,
+                        color: this.color,
+                    });
+                    this.name = '';
+                    this.color = '';
+                }
+            }));
+        });
+    </script>
+</body>
+
+</html>
