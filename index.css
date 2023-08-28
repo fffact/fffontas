@@ -1,0 +1,42 @@
+#editor {
+    margin-bottom: 1em;
+}
+
+.buttongroup {
+    display: flex;
+}
+
+.buttongroup button {
+    border: 1px solid buttonborder;
+    font-family: Roboto, sans-serif;
+    font-weight: 400;
+    font-size: 13px;
+}
+
+/* .buttongroup button:hover {
+    background-color: #daddfb;
+} */
+
+/* .buttongroup button:active {
+    color: white;
+    background-color: #1a30e9;
+} */
+
+.buttongroup button:not(:last-child) {
+    border-right: none;
+}
+
+.buttongroup-selected {
+    color: white;
+    background-color: #1a30e9;
+    pointer-events: none;
+}
+
+.controls {
+    display: flex;
+}
+
+#overwrite {
+    margin-left: 10px;
+}
+  

@@ -6,28 +6,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>fffontas</title>
 
-    <style>
-        #controls {
-            margin-top: 1em;
-        }
-    </style>
-
     <!-- HANDSONTABLE -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" />
     <!-- DEXIE -->
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+    <!-- ALPINE -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+
+    <!-- MY CSS -->
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
     <h3>Orario di lavoro</h3>
     <div id="editor"></div>
-    <div id="controls">
+
+    <!-- <div id="controls">
         <button id="test"        onclick="test()"       >Test</button>
         <button id="consolodate" onclick="consolidate()">Consolidate</button>
         <button id="loadfromdb"  onclick="loadFromDB()" >Load from DB</button>
         <button id="yes"         onclick="test()"       >Yes</button>
         <button id="no"          onclick="test()"       >No</button>
+    </div> -->
+
+    <!-- <div class="controls"> -->
+        <!-- turn out you MUST HAVE one space character after label
+        otherwise there's a gap to next label :facepalm: -->
+        <!-- <div class="buttongroup">
+            <input type="radio" id="draft" name="views" checked>
+            <label for="draft"> Draft </label>
+            <input type="radio" id="conso" name="views" >
+            <label for="conso"> Conso </label>
+        </div>
+
+        <button>Overwrite Draft</button>
+    </div> -->
+
+    <div class="controls" x-data="{draft: true, conso: false}">
+        <div class="buttongroup">
+            <button :class="draft && 'buttongroup-selected'"
+            @click="draft = true; conso = false; window.loadFromDB()">
+                DRAFT
+            </button>
+
+            <button :class="conso && 'buttongroup-selected'"
+            @click="draft = false; conso = true; window.consolidate()">        
+                CONSO
+            </button>
+        </div>
+        <div>
+            <button :disabled="draft" id="overwrite">OVERWRITE DRAFT</button>
+        </div>
     </div>
 
     <script src="index.js"></script>

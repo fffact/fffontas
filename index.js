@@ -91,7 +91,12 @@ function consolidate () {
         return wellFormed;
     })
     .then((rows) => {
-        console.log(rows);
+        const sorted = rows.sort((a, b) => a.linearTimeWeekly - b.linearTimeWeekly).map(e => [e.wday, e.from, e.to]);
+        console.log(sorted);
+        editor.removeHook('afterChange', _afterChange);
+        editor.clear();
+        editor.populateFromArray(0, 0, sorted);
+
     })
     .catch(e => console.error(e));
 }
@@ -106,6 +111,7 @@ function main () {
     
     editor = buildEditor();
     editor.addHook('afterChange', _afterChange);
+    loadFromDB();
 }
 
 
