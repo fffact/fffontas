@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,7 +8,8 @@
     <title>fffontas</title>
 
     <!-- HANDSONTABLE -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+    <script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" />
     <!-- DEXIE -->
     <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
@@ -18,48 +20,53 @@
     <!-- MY CSS -->
     <link rel="stylesheet" href="index.css">
 </head>
+
 <body>
     <h3>Orario di lavoro</h3>
-    <div id="editor"></div>
 
-    <!-- <div id="controls">
-        <button id="test"        onclick="test()"       >Test</button>
-        <button id="consolodate" onclick="consolidate()">Consolidate</button>
-        <button id="loadfromdb"  onclick="loadFromDB()" >Load from DB</button>
-        <button id="yes"         onclick="test()"       >Yes</button>
-        <button id="no"          onclick="test()"       >No</button>
-    </div> -->
+    <div x-data>
 
-    <!-- <div class="controls"> -->
-        <!-- turn out you MUST HAVE one space character after label
-        otherwise there's a gap to next label :facepalm: -->
-        <!-- <div class="buttongroup">
-            <input type="radio" id="draft" name="views" checked>
-            <label for="draft"> Draft </label>
-            <input type="radio" id="conso" name="views" >
-            <label for="conso"> Conso </label>
-        </div>
+        <!-- <template x-if="$store.ui.mode == 'draft'">
+            <div id="draft"></div>
+        </template>
 
-        <button>Overwrite Draft</button>
-    </div> -->
+        <template x-if="$store.ui.mode == 'conso'">
+            <div id="conso"></div>
+        </template> -->
 
-    <div class="controls" x-data="{draft: true, conso: false}">
-        <div class="buttongroup">
-            <button :class="draft && 'buttongroup-selected'"
-            @click="draft = true; conso = false; window.loadFromDB()">
-                DRAFT
-            </button>
+        <div x-show="$store.ui.mode == 'draft'" id="draft"></div>
+        <div x-show="$store.ui.mode == 'conso'" id="conso"></div>
 
-            <button :class="conso && 'buttongroup-selected'"
-            @click="draft = false; conso = true; window.consolidate()">        
-                CONSO
-            </button>
-        </div>
-        <div>
-            <button :disabled="draft" id="overwrite">OVERWRITE DRAFT</button>
+        <div class="controls" x-data>
+            <div class="buttongroup">
+                <button :class="$store.ui.mode == 'draft' && 'buttongroup-selected'" 
+                @click="window.enterDraftMode()">
+                    DRAFT
+                </button>
+
+                <button :class="$store.ui.mode == 'conso' && 'buttongroup-selected'" 
+                @click="window.enterConsoMode()">
+                    CONSO
+                </button>
+            </div>
+            <div>
+                <button :disabled="$store.ui.mode == 'draft'" id="overwrite">OVERWRITE DRAFT</button>
+            </div>
         </div>
     </div>
 
+    <!-- <button onclick="test()">TEST</button> -->
+
+    <script>
+        // init alpine
+        document.addEventListener('alpine:init', () => {
+            console.log('alpine:init');
+            Alpine.store('ui', {
+                mode: 'draft'
+            });
+        });
+    </script>
     <script src="index.js"></script>
 </body>
+
 </html>
