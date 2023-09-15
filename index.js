@@ -32,33 +32,26 @@ function buildConso () {
     return hot;
 }
 
-function afterChangeHandler (changes, source) {
-    console.log('handler', changes, source);
+async function afterChangeHandler (changes, source) {
+    // console.log('handler hit', changes, source);
     if (['edit', 'CopyPaste.cut', 'CopyPaste.paste'].includes(source)) {
-        // we respond to user input AND NOT to `populateFromArray`
+        
+        // console.log('handler working');
+        const chain = [];
         for (const c of changes) {
             const [id, prop,, value] = c;
-            // console.log({id, prop, value});
 
-            db.workingHours.update(id, {[prop]: value})
-            .then((updated) => {
+            try {
+                const updated = await db.workingHours.update(id, {[prop]: value});
                 if (!updated) {
-                    // id doesn't exist
-                    db.workingHours.add({id, [prop]: value});
+                    const result = await db.workingHours.add({id, [prop]: value});
+                    // console.log(result);
                 }
-            })
-            .catch(e => console.error(e));
+            } catch (error) {
+                console.error(error);
+            }
         }
     }
-}
-
-function getRowsFromDB () {
-    return db.workingHours.orderBy('id').toArray()
-    .then((rows) => {
-        const r = rows.map((row) => [row.wday, row.from, row.to]);
-        return r;
-    })
-    .catch(e => console.error(e));
 }
 
 function validateRow (row) {
@@ -85,7 +78,7 @@ function validateRow (row) {
         }
 
         if ((h0 * 60 + m0) >= (h1 * 60 + m1)) {
-            console.log(h0, m0, h1, m1);
+            // console.log(h0, m0, h1, m1);
             throw new Error(`Malformed duration at row ${row.id}`);
         }
 
@@ -117,30 +110,82 @@ function getValidatedRows () {
     .catch(e => console.error(e));
 }
 
-function enterDraftMode () {
-    console.log('enter draft mode');
+function dbRowsToChanges (rows) {
+    // rows is [{id, wday, from, to}, ...]
 
-    Alpine.store('ui').mode = 'draft';
+    let changes = [];
+    let emptyIndexes = [];
+    let empty;
+
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        empty = true;
+
+        if (row.wday) {
+            changes.push([row.id, 'wday', row.wday]);
+            empty = false;
+        }
+        if (row.from) {
+            changes.push([row.id, 'from', row.from]);
+            empty = false;
+        }
+        if (row.to) {
+            changes.push([row.id, 'to', row.to]);
+            empty = false;
+        }
+        if (empty) {
+            emptyIndexes.push(row.id);
+        }
+    }
+    return {changes, empty: emptyIndexes};
 }
 
-function enterConsoMode () {
-    console.log('enter conso mode');
 
-    // remove empty row from db?
 
+function populateDraftFromDB () {
+    db.workingHours.orderBy('id').toArray()
+    .then((rows) => {
+        // writing startegy #1, `setDataAtRowProp`        
+        const {changes, empty} = dbRowsToChanges(rows);
+        draft.setDataAtRowProp(changes, null, null, 'fff:init');
+        // can't figure out what is the right place to clean up db, i.e. remove empty rows
+        // i'll tentatively do it here
+        db.workingHours.bulkDelete(empty);
+    })
+    .catch(e => console.error(e));
+}
+
+function populateConsoFromDB () {
     getValidatedRows()
     .then((rows) => {
+        // writing startegy #2, `populateFromArray`
         conso.clear();
         if (rows.length > 0) conso.populateFromArray(0, 0, rows);
         conso.deselectCell();
     })
     .catch(e => console.error(e));
+}
+
+function copyToDraft () {
+    console.log('copy to draft');
+    const d = conso.getData().map((e, i) => ({id: i, wday: e[0], from: e[1], to: e[2]}));
+    console.log(d);
+}
+
+
+
+function enterDraftMode () {
+    // console.log('enter draft mode');
+    Alpine.store('ui').mode = 'draft';
+}
+
+function enterConsoMode () {
+    // console.log('enter conso mode');
+    populateConsoFromDB();
     Alpine.store('ui').mode = 'conso';
 }
 
-function test () {
-    conso.clear();
-}
+
 
 // MAIN
 function main () {
@@ -151,18 +196,20 @@ function main () {
         workingHours: 'id'
     });
 
-    // init draft view
-    draft = buildDraft();
-    getRowsFromDB()
-    .then((rows) => {
-        draft.populateFromArray(0, 0, rows);
-    })
-    .catch(e => console.error(e));
+    db.workingHours.hook('creating', function (primKey, obj, trans) {
+        // console.log('creating', primKey, obj, trans);
+        console.log('creating', obj);
+    });
+    db.workingHours.hook('updating', function (mods, primKey, obj, trans) {
+        console.log('updating', mods, obj);
+    });
 
-    // init conso view
+
+    // init views
+    draft = buildDraft();
     conso = buildConso();
 
-    // enterDraftMode();
+    populateDraftFromDB();
 }
 
 

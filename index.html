@@ -50,7 +50,11 @@
                 </button>
             </div>
             <div>
-                <button :disabled="$store.ui.mode == 'draft'" id="overwrite">OVERWRITE DRAFT</button>
+                <button :disabled="$store.ui.mode == 'draft'" 
+                id="copytodraft"
+                @click="window.copyToDraft()">
+                    COPY TO DRAFT
+                </button>
             </div>
         </div>
     </div>
@@ -60,7 +64,7 @@
     <script>
         // init alpine
         document.addEventListener('alpine:init', () => {
-            console.log('alpine:init');
+            // console.log('alpine:init');
             Alpine.store('ui', {
                 mode: 'draft'
             });
